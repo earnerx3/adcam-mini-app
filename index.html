@@ -62,16 +62,10 @@
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
         }
 
-        /* Skeleton Loading Animation */
-        .skeleton {
-            background: rgba(255, 255, 255, 0.05);
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
+        /* Image Custom Glow Effects */
+        .glow-purple { box-shadow: 0 0 15px rgba(147, 51, 234, 0.4); }
+        .glow-cyan { box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+        .glow-orange { box-shadow: 0 0 15px rgba(249, 115, 22, 0.4); }
     </style>
 </head>
 <body class="pb-28 px-5 pt-6 opacity-0 transition-opacity duration-500" id="main-body">
@@ -87,7 +81,7 @@
                 <h1 id="user-name" class="text-lg font-extrabold text-gradient truncate block">Loading...</h1>
                 <div class="flex items-center gap-1 mt-0.5 text-xs text-gray-400 font-medium truncate block">
                     <i class="ph-fill ph-star text-yellow-500 flex-shrink-0"></i>
-                    <span id="user-level" class="truncate">Level 0</span>
+                    <span id="user-level" class="truncate">Member</span>
                 </div>
             </div>
         </div>
@@ -98,56 +92,31 @@
         </div>
     </header>
 
-    <div class="flex gap-2 mb-6 bg-[#0B0F19]/60 p-1.5 rounded-2xl border border-white/5 backdrop-blur-sm">
-        <button class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl text-sm font-bold shadow-[0_4px_15px_rgba(0,242,254,0.25)] active:scale-95 transition-all">
-            <i class="ph-bold ph-lightning mr-1.5"></i> Earn
-        </button>
-        <button class="flex-1 text-gray-400 py-3 rounded-xl text-sm font-bold hover:text-white transition-all active:scale-95">
-            <i class="ph-bold ph-mega-phone mr-1.5"></i> Promote
-        </button>
-    </div>
-
     <section>
         <div class="flex justify-between items-end mb-4">
             <h2 class="text-xl font-bold flex items-center gap-2">
                 <i class="ph-fill ph-fire text-orange-500 text-2xl drop-shadow-[0_0_10px_rgba(249,115,22,0.4)]"></i> 
-                Tasks
+                Active Tasks
             </h2>
-            <span class="text-xs text-cyan-400 font-semibold cursor-pointer">View All</span>
         </div>
 
         <div id="task-list" class="space-y-3.5">
-            <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 group cursor-pointer active:scale-[0.98]">
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <div class="relative w-11 h-11 flex-shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 p-[1px]">
-                        <div class="w-full h-full bg-[#0B0F19] rounded-xl flex items-center justify-center">
-                            <i class="ph-fill ph-telegram-logo text-2xl text-gradient-primary"></i>
-                        </div>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <h3 class="font-bold text-sm text-white group-hover:text-cyan-400 transition-colors truncate">Official Channel</h3>
-                        <p class="text-xs text-gray-400 mt-1 truncate">Join for updates</p>
-                    </div>
-                </div>
-                <button class="bg-[#0B0F19] border border-cyan-500/30 text-cyan-400 px-3.5 py-2.5 rounded-2xl text-sm font-bold hover:bg-cyan-500 hover:text-white transition-all">
-                    +100 <i class="ph-fill ph-coin text-yellow-400 ml-1"></i>
-                </button>
-            </div>
+            <div class="text-center text-gray-500 text-sm py-4">Loading tasks...</div>
         </div>
     </section>
 
     <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass-card rounded-3xl floating-nav z-50">
         <div class="flex justify-between items-center p-2 px-6">
-            <div class="flex flex-col items-center justify-center py-2 relative cursor-pointer active:scale-95 transition-all text-cyan-400">
+            <div class="flex flex-col items-center justify-center py-2 relative cursor-pointer text-cyan-400">
                 <div class="absolute -top-2 w-8 h-1 bg-cyan-400 rounded-b-lg shadow-[0_0_10px_#00F2FE]"></div>
-                <i class="ph-fill ph-house text-2xl mb-1"></i>
+                <i class="ph-fill ph-house text-2xl mb-1 drop-shadow-[0_0_8px_rgba(0,242,254,0.5)]"></i>
                 <span class="text-[11px] font-bold">Home</span>
             </div>
-            <div class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
+            <div onclick="window.location.href='post.html'" class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
                 <i class="ph-bold ph-plus-circle text-2xl mb-1"></i>
                 <span class="text-[11px] font-bold">Post</span>
             </div>
-            <div class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
+            <div onclick="window.location.href='profile.html'" class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
                 <i class="ph-bold ph-user text-2xl mb-1"></i>
                 <span class="text-[11px] font-bold">Profile</span>
             </div>
@@ -156,9 +125,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase Configuration (Same as login)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBDeeRAGoprwyOj9RzmcDDu2JEoII6Hn_I",
             authDomain: "whaledrop-2f9ce.firebaseapp.com",
@@ -170,52 +139,159 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        // Telegram WebApp Initialization
         const tg = window.Telegram.WebApp;
         tg.ready();
-        
-        const mainBody = document.getElementById('main-body');
-        const tgUser = tg.initDataUnsafe?.user;
 
-        // Security Guard: Check if user data exists
-        if (!tgUser) {
-            window.location.href = "login.html";
-        } else {
-            // Fetch User Data in Real-time from Firestore
+        let botToken = "";
+        let currentUserData = null;
+
+        async function initApp() {
+            const tgUser = tg.initDataUnsafe?.user;
+            if (!tgUser) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Fetch Bot Token from secure config
+            const configRef = doc(db, "config", "settings");
+            const configSnap = await getDoc(configRef);
+            if(configSnap.exists()) {
+                botToken = configSnap.data().botToken;
+            }
+
+            // Real-time User Data Fetching
             const userRef = doc(db, "users", String(tgUser.id));
-            
             onSnapshot(userRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const userData = docSnap.data();
+                    currentUserData = docSnap.data();
+                    document.getElementById('user-name').innerText = currentUserData.first_name;
+                    document.getElementById('user-balance').innerText = Number(currentUserData.balance || 0).toLocaleString();
+                    document.getElementById('user-avatar').src = currentUserData.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUserData.first_name}&backgroundColor=00F2FE`;
+                    document.getElementById('main-body').classList.remove('opacity-0');
                     
-                    // Update UI with real data
-                    document.getElementById('user-name').innerText = userData.first_name || "User";
-                    document.getElementById('user-balance').innerText = Number(userData.balance || 0).toLocaleString();
-                    document.getElementById('user-level').innerText = "Level " + (userData.level || 1) + " Member";
-                    
-                    const avatarUrl = userData.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${userData.first_name}&backgroundColor=00F2FE`;
-                    document.getElementById('user-avatar').src = avatarUrl;
-                    
-                    // Show body after data loads
-                    mainBody.classList.remove('opacity-0');
+                    loadTasks(); // Load tasks after confirming user
                 } else {
-                    // If document doesn't exist, redirect to login to create account
                     window.location.href = "login.html";
                 }
-            }, (error) => {
-                console.error("Firestore Error:", error);
-                // In case of permission errors, redirect to login
-                window.location.href = "login.html";
             });
         }
 
-        // Haptic Feedback for all buttons
-        document.querySelectorAll('button, .nav-btn').forEach(el => {
-            el.addEventListener('click', () => {
-                tg.HapticFeedback.impactOccurred('light');
+        // Load Dynamic Tasks from Firestore
+        function loadTasks() {
+            const taskListEl = document.getElementById('task-list');
+            const q = query(collection(db, "campaigns"), where("status", "==", "active"));
+            
+            onSnapshot(q, (snapshot) => {
+                taskListEl.innerHTML = "";
+                if(snapshot.empty) {
+                    taskListEl.innerHTML = `<div class="text-center text-gray-500 text-sm py-4">No active tasks available right now.</div>`;
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const task = docSnap.data();
+                    const taskId = docSnap.id;
+                    
+                    // Check if user already completed this task
+                    const isCompleted = currentUserData.completedTasks && currentUserData.completedTasks.includes(taskId);
+                    if(isCompleted) return; // Hide completed tasks
+
+                    // Handle Custom Image or Icon with Glow
+                    let mediaHtml = '';
+                    if (task.customImage) {
+                        mediaHtml = `<img src="${task.customImage}" class="w-full h-full rounded-xl object-cover glow-cyan">`;
+                    } else {
+                        mediaHtml = `<div class="w-full h-full bg-[#0B0F19] rounded-xl flex items-center justify-center glow-purple">
+                                        <i class="ph-fill ph-telegram-logo text-2xl text-gradient-primary"></i>
+                                     </div>`;
+                    }
+
+                    const taskCard = document.createElement('div');
+                    // Clicking body goes to Details page
+                    taskCard.className = "glass-card p-3 rounded-2xl flex items-center justify-between gap-3 group cursor-pointer active:scale-[0.98]";
+                    taskCard.onclick = () => window.location.href = `task_details.html?id=${taskId}`;
+                    
+                    taskCard.innerHTML = `
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="relative w-11 h-11 flex-shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 p-[1px]">
+                                ${mediaHtml}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-bold text-sm text-white group-hover:text-cyan-400 transition-colors truncate">${task.title}</h3>
+                                <p class="text-xs text-gray-400 mt-1 truncate">${task.description}</p>
+                            </div>
+                        </div>
+                        <button id="btn-${taskId}" onclick="verifyAndClaim(event, '${taskId}', '${task.channelUsername}', ${task.rewardPerUser})" class="bg-[#0B0F19] border border-cyan-500/30 text-cyan-400 px-3.5 py-2.5 rounded-2xl text-sm font-bold hover:bg-cyan-500 hover:text-white transition-all btn-glow flex items-center gap-1">
+                            +${task.rewardPerUser} <i class="ph-fill ph-coin text-yellow-400"></i>
+                        </button>
+                    `;
+                    taskListEl.appendChild(taskCard);
+                });
+                
+                if(taskListEl.innerHTML === "") {
+                    taskListEl.innerHTML = `<div class="text-center text-gray-500 text-sm py-4">You have completed all available tasks!</div>`;
+                }
             });
-        });
+        }
+
+        // Global function to Verify Telegram Join & Claim Reward
+        window.verifyAndClaim = async function(event, taskId, channelUsername, rewardAmount) {
+            event.stopPropagation(); // Prevent opening task_details page
+            const btn = document.getElementById(`btn-${taskId}`);
+            
+            // Clean username (remove @ if exists)
+            const cleanUsername = channelUsername.replace('@', '');
+            
+            // Change button to Loading
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i>`;
+            btn.disabled = true;
+
+            try {
+                if(!botToken) throw new Error("Bot Token missing in config!");
+
+                // Check Telegram API
+                const tgUserId = tg.initDataUnsafe.user.id;
+                const apiUrl = `https://api.telegram.org/bot${botToken}/getChatMember?chat_id=@${cleanUsername}&user_id=${tgUserId}`;
+                
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.ok && (data.result.status === 'member' || data.result.status === 'administrator' || data.result.status === 'creator')) {
+                    
+                    // User Joined! Update Firestore Transaction
+                    const userRef = doc(db, "users", String(tgUserId));
+                    const campaignRef = doc(db, "campaigns", taskId);
+
+                    await updateDoc(userRef, {
+                        balance: increment(rewardAmount),
+                        completedTasks: arrayUnion(taskId)
+                    });
+
+                    await updateDoc(campaignRef, {
+                        completedCount: increment(1)
+                    });
+
+                    // Success UI
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert(`🎉 Congratulations! ${rewardAmount} Coins added to your balance.`);
+                    
+                } else {
+                    // Not joined
+                    tg.HapticFeedback.notificationOccurred('error');
+                    tg.showAlert(`⚠️ You haven't joined the channel yet!\n\nPlease join @${cleanUsername} first to claim the reward.`);
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Verification Error:", error);
+                tg.showAlert("An error occurred during verification. Please try again.");
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        };
+
+        initApp();
     </script>
 </body>
 </html>
