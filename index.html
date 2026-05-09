@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PromoHub - Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #05050A;
+            --primary: #00F2FE;
+            --secondary: #4FACFE;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 172, 254, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(161, 140, 209, 0.08) 0%, transparent 50%);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-primary {
+            background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-glow {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+
+        ::-webkit-scrollbar { display: none; }
+
+        .floating-nav {
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Skeleton Loading Animation */
+        .skeleton {
+            background: rgba(255, 255, 255, 0.05);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="pb-28 px-5 pt-6 opacity-0 transition-opacity duration-500" id="main-body">
+
+    <header class="glass-card rounded-3xl p-4 mb-6 flex justify-between items-center relative overflow-hidden gap-3">
+        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent"></div>
+        
+        <div class="relative z-10 flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 p-[1px]">
+                <img id="user-avatar" src="" alt="User" class="w-full h-full rounded-full bg-[#05050A] object-cover">
+            </div>
+            <div class="min-w-0 flex-1"> 
+                <h1 id="user-name" class="text-lg font-extrabold text-gradient truncate block">Loading...</h1>
+                <div class="flex items-center gap-1 mt-0.5 text-xs text-gray-400 font-medium truncate block">
+                    <i class="ph-fill ph-star text-yellow-500 flex-shrink-0"></i>
+                    <span id="user-level" class="truncate">Level 0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="relative z-10 bg-[#0B0F19]/80 border border-white/10 px-3 py-2 rounded-2xl flex items-center gap-1.5 backdrop-blur-md flex-shrink-0">
+            <i class="ph-fill ph-coin text-yellow-400 text-xl drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]"></i>
+            <span id="user-balance" class="font-bold text-white text-base tracking-wide">0</span>
+        </div>
+    </header>
+
+    <div class="flex gap-2 mb-6 bg-[#0B0F19]/60 p-1.5 rounded-2xl border border-white/5 backdrop-blur-sm">
+        <button class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl text-sm font-bold shadow-[0_4px_15px_rgba(0,242,254,0.25)] active:scale-95 transition-all">
+            <i class="ph-bold ph-lightning mr-1.5"></i> Earn
+        </button>
+        <button class="flex-1 text-gray-400 py-3 rounded-xl text-sm font-bold hover:text-white transition-all active:scale-95">
+            <i class="ph-bold ph-mega-phone mr-1.5"></i> Promote
+        </button>
+    </div>
+
+    <section>
+        <div class="flex justify-between items-end mb-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i class="ph-fill ph-fire text-orange-500 text-2xl drop-shadow-[0_0_10px_rgba(249,115,22,0.4)]"></i> 
+                Tasks
+            </h2>
+            <span class="text-xs text-cyan-400 font-semibold cursor-pointer">View All</span>
+        </div>
+
+        <div id="task-list" class="space-y-3.5">
+            <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 group cursor-pointer active:scale-[0.98]">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="relative w-11 h-11 flex-shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 p-[1px]">
+                        <div class="w-full h-full bg-[#0B0F19] rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-telegram-logo text-2xl text-gradient-primary"></i>
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3 class="font-bold text-sm text-white group-hover:text-cyan-400 transition-colors truncate">Official Channel</h3>
+                        <p class="text-xs text-gray-400 mt-1 truncate">Join for updates</p>
+                    </div>
+                </div>
+                <button class="bg-[#0B0F19] border border-cyan-500/30 text-cyan-400 px-3.5 py-2.5 rounded-2xl text-sm font-bold hover:bg-cyan-500 hover:text-white transition-all">
+                    +100 <i class="ph-fill ph-coin text-yellow-400 ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass-card rounded-3xl floating-nav z-50">
+        <div class="flex justify-between items-center p-2 px-6">
+            <div class="flex flex-col items-center justify-center py-2 relative cursor-pointer active:scale-95 transition-all text-cyan-400">
+                <div class="absolute -top-2 w-8 h-1 bg-cyan-400 rounded-b-lg shadow-[0_0_10px_#00F2FE]"></div>
+                <i class="ph-fill ph-house text-2xl mb-1"></i>
+                <span class="text-[11px] font-bold">Home</span>
+            </div>
+            <div class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
+                <i class="ph-bold ph-plus-circle text-2xl mb-1"></i>
+                <span class="text-[11px] font-bold">Post</span>
+            </div>
+            <div class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
+                <i class="ph-bold ph-user text-2xl mb-1"></i>
+                <span class="text-[11px] font-bold">Profile</span>
+            </div>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Firebase Configuration (Same as login)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDeeRAGoprwyOj9RzmcDDu2JEoII6Hn_I",
+            authDomain: "whaledrop-2f9ce.firebaseapp.com",
+            projectId: "whaledrop-2f9ce",
+            storageBucket: "whaledrop-2f9ce.firebasestorage.app",
+            messagingSenderId: "509841103423",
+            appId: "1:509841103423:web:67d50e6f462b287c64768a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Telegram WebApp Initialization
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        
+        const mainBody = document.getElementById('main-body');
+        const tgUser = tg.initDataUnsafe?.user;
+
+        // Security Guard: Check if user data exists
+        if (!tgUser) {
+            window.location.href = "login.html";
+        } else {
+            // Fetch User Data in Real-time from Firestore
+            const userRef = doc(db, "users", String(tgUser.id));
+            
+            onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    
+                    // Update UI with real data
+                    document.getElementById('user-name').innerText = userData.first_name || "User";
+                    document.getElementById('user-balance').innerText = Number(userData.balance || 0).toLocaleString();
+                    document.getElementById('user-level').innerText = "Level " + (userData.level || 1) + " Member";
+                    
+                    const avatarUrl = userData.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${userData.first_name}&backgroundColor=00F2FE`;
+                    document.getElementById('user-avatar').src = avatarUrl;
+                    
+                    // Show body after data loads
+                    mainBody.classList.remove('opacity-0');
+                } else {
+                    // If document doesn't exist, redirect to login to create account
+                    window.location.href = "login.html";
+                }
+            }, (error) => {
+                console.error("Firestore Error:", error);
+                // In case of permission errors, redirect to login
+                window.location.href = "login.html";
+            });
+        }
+
+        // Haptic Feedback for all buttons
+        document.querySelectorAll('button, .nav-btn').forEach(el => {
+            el.addEventListener('click', () => {
+                tg.HapticFeedback.impactOccurred('light');
+            });
+        });
+    </script>
+</body>
+</html>
