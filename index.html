@@ -132,9 +132,7 @@
             apiKey: "AIzaSyBDeeRAGoprwyOj9RzmcDDu2JEoII6Hn_I",
             authDomain: "whaledrop-2f9ce.firebaseapp.com",
             projectId: "whaledrop-2f9ce",
-            storageBucket: "whaledrop-2f9ce.firebasestorage.app",
-            messagingSenderId: "509841103423",
-            appId: "1:509841103423:web:67d50e6f462b287c64768a"
+            storageBucket: "whaledrop-2f9ce.firebasestorage.app"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -152,7 +150,7 @@
                 return;
             }
 
-            // Fetch Bot Token from secure config
+            // Fetch Bot Token securely
             const configRef = doc(db, "config", "settings");
             const configSnap = await getDoc(configRef);
             if(configSnap.exists()) {
@@ -181,6 +179,10 @@
             const q = query(collection(db, "campaigns"), where("status", "==", "active"));
             
             onSnapshot(q, (snapshot) => {
+                // Ignore update if some tasks are currently in "verifying" state to prevent resetting button UI
+                const isAnyVerifying = document.querySelector('[data-status="check"]');
+                if(isAnyVerifying) return; 
+
                 taskListEl.innerHTML = "";
                 if(snapshot.empty) {
                     taskListEl.innerHTML = `<div class="text-center text-gray-500 text-sm py-4">No active tasks available right now.</div>`;
@@ -205,7 +207,6 @@
                     }
 
                     const taskCard = document.createElement('div');
-                    // Go to Details Page when clicked on the card body
                     taskCard.className = "glass-card p-3 rounded-2xl flex items-center justify-between gap-3 group cursor-pointer active:scale-[0.98]";
                     taskCard.onclick = () => window.location.href = `task_details.html?id=${taskId}`;
                     
@@ -219,7 +220,8 @@
                                 <p class="text-xs text-gray-400 mt-1 truncate">${task.description}</p>
                             </div>
                         </div>
-                        <button id="btn-${taskId}" onclick="verifyAndClaim(event, '${taskId}', '${task.channelUsername}', ${task.rewardPerUser})" class="bg-[#0B0F19] border border-cyan-500/30 text-cyan-400 px-3.5 py-2.5 rounded-2xl text-sm font-bold hover:bg-cyan-500 hover:text-white transition-all btn-glow flex items-center gap-1">
+                        
+                        <button id="btn-${taskId}" data-status="join" onclick="handleTaskAction(event, '${taskId}', '${task.channelUsername}', ${task.rewardPerUser})" class="bg-[#0B0F19] border border-cyan-500/30 text-cyan-400 px-3.5 py-2.5 rounded-2xl text-sm font-bold hover:bg-cyan-500 hover:text-white transition-all btn-glow flex items-center gap-1.5 w-[85px] justify-center">
                             +${task.rewardPerUser} <i class="ph-fill ph-coin text-yellow-400"></i>
                         </button>
                     `;
@@ -232,82 +234,115 @@
             });
         }
 
-        // --- 100% SECURE VERIFICATION LOGIC ---
-        window.verifyAndClaim = async function(event, taskId, channelUsername, rewardAmount) {
+        // --- SUPER ALGORITHM: 2-STEP JOIN & VERIFY LOGIC ---
+        window.handleTaskAction = async function(event, taskId, channelUsername, rewardAmount) {
             event.stopPropagation(); // Stop clicking to details page
             const btn = document.getElementById(`btn-${taskId}`);
-            const originalBtnHtml = btn.innerHTML;
+            const status = btn.getAttribute('data-status');
             
-            // 1. Clean the username perfectly (Removes t.me/, @, or query params)
+            // Clean the username perfectly
             let cleanUsername = channelUsername;
             if (cleanUsername.includes('t.me/')) cleanUsername = cleanUsername.split('t.me/')[1];
             if (cleanUsername.includes('telegram.me/')) cleanUsername = cleanUsername.split('telegram.me/')[1];
             cleanUsername = cleanUsername.replace('@', '').split('?')[0]; 
 
-            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i>`;
-            btn.disabled = true;
-
-            try {
-                if(!botToken) throw new Error("Bot Token is missing in server configuration.");
-
-                const tgUserId = tg.initDataUnsafe.user.id;
-                // Add timestamp to prevent browser caching the previous Telegram API response
-                const apiUrl = `https://api.telegram.org/bot${botToken}/getChatMember?chat_id=@${cleanUsername}&user_id=${tgUserId}&t=${new Date().getTime()}`;
+            // ================= STEP 1: OPEN LINK & START COUNTDOWN =================
+            if (status === 'join') {
+                tg.HapticFeedback.impactOccurred('light');
                 
-                // Fetch with no-store to force real-time check
-                const response = await fetch(apiUrl, { cache: 'no-store' });
-                const data = await response.json();
+                // Open the Telegram Channel
+                tg.openTelegramLink(`https://t.me/${cleanUsername}`);
 
-                if (data.ok) {
-                    const status = data.result.status;
-                    
-                    // Check if the user is truly in the channel
-                    if (status === 'member' || status === 'administrator' || status === 'creator' || status === 'restricted') {
-                        
-                        const userRef = doc(db, "users", String(tgUserId));
-                        const campaignRef = doc(db, "campaigns", taskId);
+                // Setup Button for Countdown
+                btn.disabled = true;
+                let timeLeft = 3; // 3 seconds wait time
+                
+                btn.classList.remove('hover:bg-cyan-500', 'hover:text-white');
+                btn.classList.add('opacity-80');
+                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> ${timeLeft}s`;
 
-                        // Give balance & add to completed list
-                        await updateDoc(userRef, {
-                            balance: increment(rewardAmount),
-                            completedTasks: arrayUnion(taskId)
-                        });
-
-                        await updateDoc(campaignRef, {
-                            completedCount: increment(1)
-                        });
-
-                        tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert(`🎉 Success! ${rewardAmount} Coins added to your balance.`);
-                        
-                        // Hide the task immediately from screen
-                        const taskCard = btn.closest('.glass-card');
-                        if(taskCard) taskCard.style.display = 'none';
-
+                // Countdown Timer
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> ${timeLeft}s`;
                     } else {
-                        // User has left or been kicked
+                        // Time is up -> Change to "Check"
+                        clearInterval(timer);
+                        btn.disabled = false;
+                        btn.setAttribute('data-status', 'check');
+                        btn.classList.remove('opacity-80', 'text-cyan-400', 'border-cyan-500/30');
+                        btn.classList.add('text-green-400', 'border-green-500/40', 'hover:bg-green-500/20');
+                        btn.innerHTML = `Check`;
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                }, 1000);
+            } 
+            
+            // ================= STEP 2: VERIFY WITH SERVER =================
+            else if (status === 'check') {
+                const originalBtnHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i>`;
+                btn.disabled = true;
+
+                try {
+                    if(!botToken) throw new Error("Bot Token is missing in server configuration.");
+
+                    const tgUserId = tg.initDataUnsafe.user.id;
+                    const apiUrl = `https://api.telegram.org/bot${botToken}/getChatMember?chat_id=@${cleanUsername}&user_id=${tgUserId}&t=${new Date().getTime()}`;
+                    
+                    const response = await fetch(apiUrl, { cache: 'no-store' });
+                    const data = await response.json();
+
+                    if (data.ok) {
+                        const statusRes = data.result.status;
+                        
+                        // Check if truly in the channel
+                        if (statusRes === 'member' || statusRes === 'administrator' || statusRes === 'creator' || statusRes === 'restricted') {
+                            
+                            const userRef = doc(db, "users", String(tgUserId));
+                            const campaignRef = doc(db, "campaigns", taskId);
+
+                            // Give balance & add to completed list
+                            await updateDoc(userRef, {
+                                balance: increment(rewardAmount),
+                                completedTasks: arrayUnion(taskId)
+                            });
+
+                            await updateDoc(campaignRef, {
+                                completedCount: increment(1)
+                            });
+
+                            tg.HapticFeedback.notificationOccurred('success');
+                            tg.showAlert(`🎉 Success! ${rewardAmount} Coins added to your balance.`);
+                            
+                            // Hide the task immediately
+                            const taskCard = btn.closest('.glass-card');
+                            if(taskCard) taskCard.style.display = 'none';
+
+                        } else {
+                            // User hasn't joined
+                            tg.HapticFeedback.notificationOccurred('error');
+                            tg.showAlert(`⚠️ You haven't joined the channel yet!\n\nPlease join @${cleanUsername} to claim your coins.`);
+                            btn.innerHTML = originalBtnHtml;
+                            btn.disabled = false;
+                        }
+                    } else {
                         tg.HapticFeedback.notificationOccurred('error');
-                        tg.showAlert(`⚠️ You haven't joined the channel yet!\n\nPlease join @${cleanUsername} to claim your coins.`);
+                        if (data.description.includes('chat not found')) {
+                            tg.showAlert(`❌ Bot is not an Admin in @${cleanUsername}. Reward cannot be claimed right now.`);
+                        } else {
+                            tg.showAlert(`⚠️ Error: ${data.description}`);
+                        }
                         btn.innerHTML = originalBtnHtml;
                         btn.disabled = false;
                     }
-                } else {
-                    // API Call failed (e.g. Bot is not admin in the target channel)
-                    tg.HapticFeedback.notificationOccurred('error');
-                    console.log("Telegram Error:", data.description);
-                    if (data.description.includes('chat not found')) {
-                        tg.showAlert(`❌ Bot is not an Admin in @${cleanUsername}. Reward cannot be claimed right now.`);
-                    } else {
-                        tg.showAlert(`⚠️ Error: ${data.description}`);
-                    }
+                } catch (error) {
+                    console.error("Verification Error:", error);
+                    tg.showAlert("Network error while checking status. Please try again.");
                     btn.innerHTML = originalBtnHtml;
                     btn.disabled = false;
                 }
-            } catch (error) {
-                console.error("Verification Error:", error);
-                tg.showAlert("Network error while checking status. Please try again.");
-                btn.innerHTML = originalBtnHtml;
-                btn.disabled = false;
             }
         };
 
