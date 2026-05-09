@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PromoHub - Secure Login</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #05050A;
+            --primary: #00F2FE;
+            --secondary: #4FACFE;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 172, 254, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(161, 140, 209, 0.08) 0%, transparent 50%);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .avatar-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 242, 254, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#05050A] transition-opacity duration-500">
+        <div class="relative w-20 h-20 mb-6">
+            <div class="absolute inset-0 border-4 border-cyan-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="ph-fill ph-telegram-logo text-3xl text-cyan-400"></i>
+            </div>
+        </div>
+        <h2 class="text-xl font-bold text-gradient mb-2" id="loading-text">Connecting to Telegram...</h2>
+        <p class="text-sm text-gray-400 animate-pulse">Checking account status</p>
+    </div>
+
+    <div id="confirm-screen" class="hidden fixed inset-0 z-50 flex-col items-center justify-center bg-[#05050A]/90 backdrop-blur-xl px-6 transition-opacity duration-500">
+        <div class="glass-card p-8 rounded-[2rem] w-full max-w-sm text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-cyan-500/10 to-transparent"></div>
+            
+            <div class="relative z-10 w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 p-[2px] mb-4 avatar-pulse">
+                <img id="tg-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=transparent" alt="User" class="w-full h-full rounded-full bg-[#05050A] object-cover">
+            </div>
+            
+            <h2 id="tg-name" class="relative z-10 text-2xl font-extrabold text-white mb-1">Loading...</h2>
+            <p id="tg-username" class="relative z-10 text-cyan-400 text-sm font-medium mb-6">@loading</p>
+            
+            <div class="relative z-10 bg-[#0B0F19]/80 border border-white/5 rounded-xl p-3 mb-6">
+                <p class="text-gray-400 text-xs leading-relaxed">Is this your correct Telegram account? We will link your progress to this ID.</p>
+            </div>
+
+            <button onclick="showAuth()" class="relative z-10 w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3.5 rounded-2xl font-bold shadow-[0_4px_15px_rgba(0,242,254,0.25)] active:scale-95 transition-all mb-4 text-sm">
+                Yes, Confirm Account
+            </button>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="hidden fixed inset-0 z-50 flex-col items-center justify-center bg-[#05050A]/90 backdrop-blur-xl px-6 transition-opacity duration-500">
+        <div class="glass-card p-8 rounded-[2rem] w-full max-w-sm relative overflow-hidden">
+            <div class="text-center mb-6">
+                <i class="ph-fill ph-shield-check text-4xl text-cyan-400 mb-3 drop-shadow-[0_0_10px_rgba(0,242,254,0.4)]"></i>
+                <h2 class="text-2xl font-extrabold text-gradient mb-2">Secure Account</h2>
+                <p class="text-gray-400 text-xs leading-relaxed">Set up an email & password so you can login anytime if Telegram connection fails.</p>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 ml-1">Email Address</label>
+                    <div class="relative">
+                        <i class="ph-fill ph-envelope-simple absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg"></i>
+                        <input id="userEmail" type="email" placeholder="you@example.com" class="w-full bg-[#0B0F19] border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 ml-1">Password</label>
+                    <div class="relative">
+                        <i class="ph-fill ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg"></i>
+                        <input id="userPassword" type="password" placeholder="••••••••" class="w-full bg-[#0B0F19] border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-save" onclick="completeLogin()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3.5 rounded-2xl font-bold shadow-[0_4px_15px_rgba(0,242,254,0.25)] active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                Save & Enter App <i class="ph-bold ph-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="error-screen" class="hidden fixed inset-0 z-50 flex-col items-center justify-center bg-[#05050A] px-6 transition-opacity duration-500">
+        <div class="glass-card p-8 rounded-[2rem] w-full max-w-sm text-center">
+            <i class="ph-fill ph-warning-circle text-5xl text-red-500 mb-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]"></i>
+            <h2 class="text-xl font-bold text-white mb-2">Telegram Required</h2>
+            <p class="text-gray-400 text-sm mb-8">Please open this Mini App directly from Telegram.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Your Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDeeRAGoprwyOj9RzmcDDu2JEoII6Hn_I",
+            authDomain: "whaledrop-2f9ce.firebaseapp.com",
+            projectId: "whaledrop-2f9ce",
+            storageBucket: "whaledrop-2f9ce.firebasestorage.app",
+            messagingSenderId: "509841103423",
+            appId: "1:509841103423:web:67d50e6f462b287c64768a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Telegram Setup
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        let tgUser = tg.initDataUnsafe?.user;
+
+        window.onload = async () => {
+            if (!tgUser) {
+                // If opened outside Telegram
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('error-screen').classList.remove('hidden');
+                document.getElementById('error-screen').classList.add('flex');
+                return;
+            }
+
+            try {
+                // Check if user already exists in Firestore database
+                const userRef = doc(db, "users", String(tgUser.id));
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    // User exists! Redirect to index immediately
+                    document.getElementById('loading-text').innerText = "Logging in...";
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 500);
+                } else {
+                    // New User - Setup Confirm Screen with Real Telegram Data
+                    const avatarUrl = tgUser.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${tgUser.first_name}&backgroundColor=00F2FE`;
+                    document.getElementById('tg-avatar').src = avatarUrl;
+                    document.getElementById('tg-name').innerText = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+                    document.getElementById('tg-username').innerText = tgUser.username ? '@' + tgUser.username : 'ID: ' + tgUser.id;
+
+                    // Hide Loading, Show Confirm
+                    document.getElementById('loading-screen').classList.add('opacity-0');
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').classList.add('hidden');
+                        document.getElementById('confirm-screen').classList.remove('hidden');
+                        document.getElementById('confirm-screen').classList.add('flex');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error("Database Error:", error);
+                alert("Network error, please restart the bot.");
+            }
+        };
+
+        window.showAuth = function() {
+            document.getElementById('confirm-screen').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('confirm-screen').classList.add('hidden');
+                document.getElementById('confirm-screen').classList.remove('flex');
+                
+                const authScreen = document.getElementById('auth-screen');
+                authScreen.classList.remove('hidden');
+                authScreen.classList.add('flex');
+            }, 500);
+        }
+
+        window.completeLogin = async function() {
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+            const btn = document.getElementById('btn-save');
+
+            if(!email || password.length < 6) {
+                alert("Please enter a valid email and a password with at least 6 characters.");
+                return;
+            }
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Creating Account...';
+            btn.disabled = true;
+
+            try {
+                // 1. Create Auth Account
+                await createUserWithEmailAndPassword(auth, email, password);
+
+                // 2. Save data to Firestore exactly like your reference file
+                const userRef = doc(db, "users", String(tgUser.id));
+                await setDoc(userRef, {
+                    userId: String(tgUser.id),
+                    first_name: tgUser.first_name,
+                    last_name: tgUser.last_name || '',
+                    username: tgUser.username || '',
+                    photo_url: tgUser.photo_url || '',
+                    email: email,
+                    balance: 0,
+                    energy: 100,
+                    totalEarnings: 0,
+                    level: 1,
+                    createdAt: serverTimestamp()
+                });
+
+                // 3. Success -> Send to index.html
+                window.location.href = "index.html";
+
+            } catch (error) {
+                // If email already exists in Auth but not Firestore, try signing in
+                if (error.code === 'auth/email-already-in-use') {
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                        window.location.href = "index.html";
+                    } catch (signInError) {
+                        alert("Email is already used with a different password.");
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                } else {
+                    alert("Error: " + error.message);
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
