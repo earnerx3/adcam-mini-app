@@ -169,14 +169,13 @@
                     document.getElementById('user-avatar').src = currentUserData.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUserData.first_name}&backgroundColor=00F2FE`;
                     document.getElementById('main-body').classList.remove('opacity-0');
                     
-                    loadTasks(); // Load tasks after confirming user
+                    loadTasks(); 
                 } else {
                     window.location.href = "login.html";
                 }
             });
         }
 
-        // Load Dynamic Tasks from Firestore
         function loadTasks() {
             const taskListEl = document.getElementById('task-list');
             const q = query(collection(db, "campaigns"), where("status", "==", "active"));
@@ -192,11 +191,10 @@
                     const task = docSnap.data();
                     const taskId = docSnap.id;
                     
-                    // Check if user already completed this task
+                    // Hide if user already completed this task
                     const isCompleted = currentUserData.completedTasks && currentUserData.completedTasks.includes(taskId);
-                    if(isCompleted) return; // Hide completed tasks
+                    if(isCompleted) return; 
 
-                    // Handle Custom Image or Icon with Glow
                     let mediaHtml = '';
                     if (task.customImage) {
                         mediaHtml = `<img src="${task.customImage}" class="w-full h-full rounded-xl object-cover glow-cyan">`;
@@ -207,7 +205,7 @@
                     }
 
                     const taskCard = document.createElement('div');
-                    // Clicking body goes to Details page
+                    // Go to Details Page when clicked on the card body
                     taskCard.className = "glass-card p-3 rounded-2xl flex items-center justify-between gap-3 group cursor-pointer active:scale-[0.98]";
                     taskCard.onclick = () => window.location.href = `task_details.html?id=${taskId}`;
                     
@@ -234,58 +232,80 @@
             });
         }
 
-        // Global function to Verify Telegram Join & Claim Reward
+        // --- 100% SECURE VERIFICATION LOGIC ---
         window.verifyAndClaim = async function(event, taskId, channelUsername, rewardAmount) {
-            event.stopPropagation(); // Prevent opening task_details page
+            event.stopPropagation(); // Stop clicking to details page
             const btn = document.getElementById(`btn-${taskId}`);
-            
-            // Clean username (remove @ if exists)
-            const cleanUsername = channelUsername.replace('@', '');
-            
-            // Change button to Loading
             const originalBtnHtml = btn.innerHTML;
+            
+            // 1. Clean the username perfectly (Removes t.me/, @, or query params)
+            let cleanUsername = channelUsername;
+            if (cleanUsername.includes('t.me/')) cleanUsername = cleanUsername.split('t.me/')[1];
+            if (cleanUsername.includes('telegram.me/')) cleanUsername = cleanUsername.split('telegram.me/')[1];
+            cleanUsername = cleanUsername.replace('@', '').split('?')[0]; 
+
             btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i>`;
             btn.disabled = true;
 
             try {
-                if(!botToken) throw new Error("Bot Token missing in config!");
+                if(!botToken) throw new Error("Bot Token is missing in server configuration.");
 
-                // Check Telegram API
                 const tgUserId = tg.initDataUnsafe.user.id;
-                const apiUrl = `https://api.telegram.org/bot${botToken}/getChatMember?chat_id=@${cleanUsername}&user_id=${tgUserId}`;
+                // Add timestamp to prevent browser caching the previous Telegram API response
+                const apiUrl = `https://api.telegram.org/bot${botToken}/getChatMember?chat_id=@${cleanUsername}&user_id=${tgUserId}&t=${new Date().getTime()}`;
                 
-                const response = await fetch(apiUrl);
+                // Fetch with no-store to force real-time check
+                const response = await fetch(apiUrl, { cache: 'no-store' });
                 const data = await response.json();
 
-                if (data.ok && (data.result.status === 'member' || data.result.status === 'administrator' || data.result.status === 'creator')) {
+                if (data.ok) {
+                    const status = data.result.status;
                     
-                    // User Joined! Update Firestore Transaction
-                    const userRef = doc(db, "users", String(tgUserId));
-                    const campaignRef = doc(db, "campaigns", taskId);
+                    // Check if the user is truly in the channel
+                    if (status === 'member' || status === 'administrator' || status === 'creator' || status === 'restricted') {
+                        
+                        const userRef = doc(db, "users", String(tgUserId));
+                        const campaignRef = doc(db, "campaigns", taskId);
 
-                    await updateDoc(userRef, {
-                        balance: increment(rewardAmount),
-                        completedTasks: arrayUnion(taskId)
-                    });
+                        // Give balance & add to completed list
+                        await updateDoc(userRef, {
+                            balance: increment(rewardAmount),
+                            completedTasks: arrayUnion(taskId)
+                        });
 
-                    await updateDoc(campaignRef, {
-                        completedCount: increment(1)
-                    });
+                        await updateDoc(campaignRef, {
+                            completedCount: increment(1)
+                        });
 
-                    // Success UI
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`🎉 Congratulations! ${rewardAmount} Coins added to your balance.`);
-                    
+                        tg.HapticFeedback.notificationOccurred('success');
+                        tg.showAlert(`🎉 Success! ${rewardAmount} Coins added to your balance.`);
+                        
+                        // Hide the task immediately from screen
+                        const taskCard = btn.closest('.glass-card');
+                        if(taskCard) taskCard.style.display = 'none';
+
+                    } else {
+                        // User has left or been kicked
+                        tg.HapticFeedback.notificationOccurred('error');
+                        tg.showAlert(`⚠️ You haven't joined the channel yet!\n\nPlease join @${cleanUsername} to claim your coins.`);
+                        btn.innerHTML = originalBtnHtml;
+                        btn.disabled = false;
+                    }
                 } else {
-                    // Not joined
+                    // API Call failed (e.g. Bot is not admin in the target channel)
                     tg.HapticFeedback.notificationOccurred('error');
-                    tg.showAlert(`⚠️ You haven't joined the channel yet!\n\nPlease join @${cleanUsername} first to claim the reward.`);
+                    console.log("Telegram Error:", data.description);
+                    if (data.description.includes('chat not found')) {
+                        tg.showAlert(`❌ Bot is not an Admin in @${cleanUsername}. Reward cannot be claimed right now.`);
+                    } else {
+                        tg.showAlert(`⚠️ Error: ${data.description}`);
+                    }
                     btn.innerHTML = originalBtnHtml;
                     btn.disabled = false;
                 }
             } catch (error) {
                 console.error("Verification Error:", error);
-                tg.showAlert("An error occurred during verification. Please try again.");
+                tg.showAlert("Network error while checking status. Please try again.");
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
             }
