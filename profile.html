@@ -50,54 +50,100 @@
         }
 
         ::-webkit-scrollbar { display: none; }
+
+        /* --- Skeleton Loading Animation --- */
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: inherit;
+            color: transparent !important;
+        }
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.05) 20%,
+                rgba(255, 255, 255, 0.1) 60%,
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .skeleton * {
+            visibility: hidden;
+        }
     </style>
 </head>
-<body class="pb-32 px-5 pt-8 opacity-0 transition-opacity duration-500" id="profile-body">
+<body class="pb-32 px-5 pt-6 transition-opacity duration-300" id="profile-body">
 
-    <div class="flex flex-col items-center mb-8">
-        <div class="relative w-24 h-24 mb-4">
-            <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full animate-pulse blur-md opacity-50"></div>
-            <div class="relative w-full h-full rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-[2px]">
-                <img id="prof-avatar" src="" class="w-full h-full rounded-full bg-[#05050A] object-cover">
+    <div class="glass-card p-5 rounded-[2rem] mb-6 relative overflow-hidden">
+        <div class="flex items-center gap-4 mb-5">
+            <div class="relative w-16 h-16 flex-shrink-0">
+                <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full animate-pulse blur-md opacity-40"></div>
+                <div class="relative w-full h-full rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-[2px]">
+                    <img id="prof-avatar" src="" class="w-full h-full rounded-full bg-[#05050A] object-cover skeleton">
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <h2 id="prof-name" class="text-lg font-extrabold text-white truncate skeleton w-3/4 mb-1">Loading Name</h2>
+                <div class="flex items-center gap-2">
+                    <p id="prof-username" class="text-cyan-400 text-xs truncate skeleton w-1/2">@loading</p>
+                    <span id="prof-level" class="text-[9px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full font-bold uppercase skeleton">Level 1</span>
+                </div>
             </div>
         </div>
-        <h2 id="prof-name" class="text-2xl font-extrabold text-white mb-1">Loading...</h2>
-        <p id="prof-username" class="text-gray-400 text-sm mb-4">@username</p>
-        
-        <div class="flex gap-4">
-            <div class="glass-card px-5 py-3 rounded-2xl text-center">
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Balance</p>
-                <div class="flex items-center gap-1.5 justify-center">
-                    <i class="ph-fill ph-coin text-yellow-400 text-lg"></i>
-                    <span id="prof-balance" class="text-xl font-extrabold text-white">0</span>
+
+        <div class="bg-[#0B0F19]/60 border border-white/5 rounded-2xl p-3 flex justify-between items-center">
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5 ml-1">Total Balance</p>
+                <div class="flex items-center gap-1.5">
+                    <i class="ph-fill ph-coin text-yellow-400 text-xl drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]"></i>
+                    <span id="prof-balance" class="text-xl font-extrabold text-white skeleton w-16">0</span>
                 </div>
             </div>
-            <div class="glass-card px-5 py-3 rounded-2xl text-center">
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Level</p>
-                <div class="flex items-center gap-1.5 justify-center">
-                    <i class="ph-fill ph-star text-cyan-400 text-lg"></i>
-                    <span id="prof-level" class="text-xl font-extrabold text-white">1</span>
-                </div>
-            </div>
+            <button onclick="openDeposit()" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-[0_4px_15px_rgba(16,185,129,0.3)] active:scale-95 transition-all flex items-center gap-1.5">
+                <i class="ph-bold ph-wallet"></i> Deposit
+            </button>
         </div>
     </div>
 
+    <div onclick="joinSupport()" class="glass-card p-4 rounded-2xl mb-6 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform group border border-blue-500/20">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 flex items-center justify-center text-blue-400 text-2xl group-hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all">
+                <i class="ph-fill ph-telegram-logo"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition-colors">Support Channel</h3>
+                <p class="text-[11px] text-gray-400 mt-0.5">Join @Earning_with_Nahid</p>
+            </div>
+        </div>
+        <i class="ph-bold ph-caret-right text-gray-500 group-hover:text-white transition-colors"></i>
+    </div>
+
     <div class="mb-6">
-        <div class="flex border-b border-white/5 mb-6">
+        <div class="flex border-b border-white/5 mb-4">
             <button id="tab-campaigns" onclick="switchTab('my-campaigns')" class="tab-btn flex-1 py-3 text-sm font-bold active transition-all">My Campaigns</button>
             <button id="tab-history" onclick="switchTab('task-history')" class="tab-btn flex-1 py-3 text-sm font-bold text-gray-500 transition-all">Task History</button>
         </div>
 
-        <div id="my-campaigns" class="space-y-4">
-            <div class="text-center py-10 text-gray-500 text-sm">Loading your campaigns...</div>
+        <div id="my-campaigns" class="space-y-3">
+            <div class="glass-card p-4 rounded-2xl skeleton h-20"></div>
+            <div class="glass-card p-4 rounded-2xl skeleton h-20"></div>
         </div>
 
-        <div id="task-history" class="hidden space-y-4">
-            <div class="text-center py-10 text-gray-500 text-sm">Loading history...</div>
+        <div id="task-history" class="hidden space-y-3">
+            <div class="text-center py-8 text-gray-500 text-sm">Loading history...</div>
         </div>
     </div>
 
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass-card rounded-3xl z-50">
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass-card rounded-3xl z-50 floating-nav">
         <div class="flex justify-between items-center p-2 px-6">
             <div onclick="window.location.href='index.html'" class="flex flex-col items-center justify-center py-2 opacity-60 hover:opacity-100 cursor-pointer active:scale-95 transition-all text-gray-400">
                 <i class="ph-bold ph-house text-2xl mb-1"></i>
@@ -123,9 +169,7 @@
             apiKey: "AIzaSyBDeeRAGoprwyOj9RzmcDDu2JEoII6Hn_I",
             authDomain: "whaledrop-2f9ce.firebaseapp.com",
             projectId: "whaledrop-2f9ce",
-            storageBucket: "whaledrop-2f9ce.firebasestorage.app",
-            messagingSenderId: "509841103423",
-            appId: "1:509841103423:web:67d50e6f462b287c64768a"
+            storageBucket: "whaledrop-2f9ce.firebasestorage.app"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -138,18 +182,42 @@
             window.location.href = "login.html";
         }
 
-        // Fetch Profile Data
+        // --- 1. LOCAL CACHE SYSTEM ---
+        function renderUserData(data) {
+            const nameEl = document.getElementById('prof-name');
+            const userEl = document.getElementById('prof-username');
+            const balEl = document.getElementById('prof-balance');
+            const lvlEl = document.getElementById('prof-level');
+            const imgEl = document.getElementById('prof-avatar');
+
+            // Remove skeleton classes
+            [nameEl, userEl, balEl, lvlEl, imgEl].forEach(el => el.classList.remove('skeleton', 'w-3/4', 'w-1/2', 'w-16'));
+
+            // Inject Data
+            nameEl.innerText = data.first_name;
+            userEl.innerText = data.username ? '@'+data.username : 'ID: '+data.userId;
+            balEl.innerText = Number(data.balance || 0).toLocaleString();
+            lvlEl.innerText = "Level " + (data.level || 1);
+            imgEl.src = data.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${data.first_name}&backgroundColor=00F2FE`;
+        }
+
+        // Try to load from Cache first instantly
+        const cachedUser = localStorage.getItem('hub_user_profile');
+        if (cachedUser) {
+            renderUserData(JSON.parse(cachedUser));
+        }
+
+        // --- 2. FIRESTORE REAL-TIME LISTENER ---
         const userRef = doc(db, "users", String(tgUser.id));
         onSnapshot(userRef, (snap) => {
             if(snap.exists()){
                 const data = snap.data();
-                document.getElementById('prof-name').innerText = data.first_name;
-                document.getElementById('prof-username').innerText = data.username ? '@'+data.username : 'ID: '+data.userId;
-                document.getElementById('prof-balance').innerText = Number(data.balance || 0).toLocaleString();
-                document.getElementById('prof-level').innerText = data.level || 1;
-                document.getElementById('prof-avatar').src = data.photo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${data.first_name}`;
-                document.getElementById('profile-body').classList.remove('opacity-0');
+                // Update Cache
+                localStorage.setItem('hub_user_profile', JSON.stringify(data));
+                // Update UI
+                renderUserData(data);
                 
+                // Load Lists
                 loadMyCampaigns();
                 loadHistory(data.completedTasks || []);
             }
@@ -171,7 +239,18 @@
             tg.HapticFeedback.impactOccurred('light');
         };
 
-        // Load Campaigns created by this User
+        // Action Buttons
+        window.openDeposit = () => {
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showAlert("Deposit system will be integrated with P2P / Payment Gateways shortly.");
+        };
+
+        window.joinSupport = () => {
+            tg.HapticFeedback.impactOccurred('light');
+            tg.openTelegramLink('https://t.me/Earning_with_Nahid');
+        };
+
+        // Load Campaigns
         async function loadMyCampaigns() {
             const container = document.getElementById('my-campaigns');
             const q = query(collection(db, "campaigns"), where("ownerId", "==", String(tgUser.id)));
@@ -179,52 +258,54 @@
             
             container.innerHTML = "";
             if(snap.empty) {
-                container.innerHTML = `<div class="glass-card p-8 rounded-2xl text-center text-gray-500 text-sm">You haven't posted any campaigns yet.</div>`;
+                container.innerHTML = `<div class="glass-card p-6 rounded-2xl text-center text-gray-500 text-sm">You haven't posted any campaigns yet.</div>`;
                 return;
             }
 
             snap.forEach(docSnap => {
                 const camp = docSnap.data();
                 container.innerHTML += `
-                    <div class="glass-card p-4 rounded-2xl flex justify-between items-center">
+                    <div class="glass-card p-3.5 rounded-2xl flex justify-between items-center cursor-pointer active:scale-[0.98] transition-transform">
                         <div class="min-w-0 flex-1">
-                            <h3 class="font-bold text-white truncate">${camp.title}</h3>
+                            <h3 class="font-bold text-white text-sm truncate">${camp.title}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase tracking-wider">${camp.status}</span>
-                                <span class="text-[11px] text-gray-500">${camp.completedCount}/${camp.targetCount} Joined</span>
+                                <span class="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase tracking-wider border border-cyan-500/20">${camp.status}</span>
+                                <span class="text-[10px] text-gray-400">${camp.completedCount}/${camp.targetCount} Joined</span>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xs text-gray-500">Reward</p>
-                            <p class="font-bold text-cyan-400">${camp.rewardPerUser} <i class="ph-fill ph-coin text-yellow-400"></i></p>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Reward</p>
+                            <p class="font-bold text-cyan-400 text-sm">${camp.rewardPerUser} <i class="ph-fill ph-coin text-yellow-400"></i></p>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Load Tasks Completed by this User
+        // Load History
         async function loadHistory(completedArray) {
             const container = document.getElementById('task-history');
             container.innerHTML = "";
             
             if(completedArray.length === 0) {
-                container.innerHTML = `<div class="glass-card p-8 rounded-2xl text-center text-gray-500 text-sm">No tasks completed yet. Start earning!</div>`;
+                container.innerHTML = `<div class="glass-card p-6 rounded-2xl text-center text-gray-500 text-sm">No tasks completed yet. Start earning!</div>`;
                 return;
             }
 
-            for(const taskId of completedArray.slice().reverse()) {
+            for(const taskId of completedArray.slice(-10).reverse()) { // Load last 10 for performance
                 const taskRef = doc(db, "campaigns", taskId);
                 const taskSnap = await getDoc(taskRef);
                 if(taskSnap.exists()) {
                     const task = taskSnap.data();
                     container.innerHTML += `
-                        <div class="glass-card p-4 rounded-2xl border-l-4 border-green-500 flex justify-between items-center">
-                            <div>
-                                <h3 class="font-bold text-white text-sm">${task.title}</h3>
-                                <p class="text-[11px] text-gray-500 mt-0.5">Verified Success</p>
+                        <div class="glass-card p-3.5 rounded-2xl border-l-[3px] border-green-500 flex justify-between items-center bg-gradient-to-r from-green-500/5 to-transparent">
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-bold text-white text-sm truncate">${task.title}</h3>
+                                <p class="text-[10px] text-green-400 mt-0.5 font-medium flex items-center gap-1">
+                                    <i class="ph-fill ph-check-circle"></i> Verified Success
+                                </p>
                             </div>
-                            <div class="flex items-center gap-1 font-extrabold text-green-400">
+                            <div class="flex items-center gap-1 font-extrabold text-green-400 text-sm flex-shrink-0">
                                 +${task.rewardPerUser} <i class="ph-fill ph-coin text-yellow-400"></i>
                             </div>
                         </div>
